@@ -1,36 +1,24 @@
 extern crate lodepng;
 
-use std::io::File;
+struct Pixel {r: u8, g: u8, b: u8}
 
-fn test_reading() {
-    let path = Path::new("test.txt");
-    let display = path.display();
-
-    let mut file = match File::open(&path) {
-        Err(why) => fail!("couldn't open {}: {}", display, why.desc),
-        Ok(file) => file,
-    };
-
-    let string = match file.read_to_string() {
-        Err(e) => fail!("couldn't read {}: {}", display, e.desc),
-        Ok(s)  => s,
-    };
-
-    println!("{:s}", string);
-}
-
-fn test_writing() {
-    let path = Path::new("test_write.txt");
-    let display = path.display();
-    let mut file = match File::create(&path) {
-        Err(why) => fail!("couldn't open {}: {}", display, why.desc),
-        Ok(file) => file,
-    };
-
-    let _ = file.write_str("This is a test!");
-}
+static h : u32 = 10;
+static w : u32 = 10;
+static pixel_count : uint = 100;
 
 fn main() {
-    test_reading();
-    test_writing();
+    let path = &Path::new("test.png");
+
+    let pixel_data = [Pixel {r: 0, g: 0, b: 0}, ..pixel_count];
+    let mut data = [0u8, ..pixel_count*3];
+    assert!(pixel_data.len()*3 == data.len());
+    for (i, p) in pixel_data.iter().enumerate() {
+        data[i*3 + 0] = p.r;
+        data[i*3 + 1] = p.g;
+        data[i*3 + 2] = p.b;
+    }
+    match lodepng::encode_file(path, data, w, h, lodepng::LCT_RGB, 8) {
+        Err(e) => fail!("Error writing: {}", e),
+        Ok(_)  => (),
+    }
 }
