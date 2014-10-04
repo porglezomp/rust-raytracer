@@ -1,7 +1,6 @@
 extern crate lodepng;
 
 use std::comm;
-//use std::sync::Arc;
 
 #[deriving(Clone, Show)]
 struct Point {x: u32, y: u32}
