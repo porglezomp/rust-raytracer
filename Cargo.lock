@@ -3,10 +3,16 @@ name = "raytracer"
 version = "0.0.1"
 dependencies = [
  "lodepng 0.1.0 (git+https://github.com/pornel/lodepng-rust.git#cb945bbbc980220c8ab9545a5b8695544dce5171)",
+ "num 0.0.1 (git+https://github.com/rust-lang/num#9b6e014a8b9be2a312ce304b89a7c0e1ce87396b)",
 ]
 
 [[package]]
 name = "lodepng"
 version = "0.1.0"
 source = "git+https://github.com/pornel/lodepng-rust.git#cb945bbbc980220c8ab9545a5b8695544dce5171"
+
+[[package]]
+name = "num"
+version = "0.0.1"
+source = "git+https://github.com/rust-lang/num#9b6e014a8b9be2a312ce304b89a7c0e1ce87396b"
 

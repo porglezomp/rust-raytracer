@@ -7,3 +7,7 @@ authors = ["Caleb Jones <bionicle.dragon@gmail.com>"]
 [dependencies.lodepng]
 
 git = "https://github.com/pornel/lodepng-rust.git"
+
+[dependencies.num]
+
+git = "https://github.com/rust-lang/num"

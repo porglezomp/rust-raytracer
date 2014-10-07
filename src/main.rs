@@ -1,15 +1,19 @@
 extern crate lodepng;
+extern crate num;
 
 use std::comm;
-use types::{Point, Pixel, Rect};
+use types::{Point, Pixel, ImageIter};
+use num::Complex;
 mod types;
 
 static h : u32 = 512;
-static w : u32 = 512;
+static w : u32 = 1024;
+static aspect : f32 = w as f32 / h as f32;
 static pixel_count : uint = (w*h) as uint;
 
 fn main() {
     let num_threads = std::rt::default_sched_threads();
+    println!("Working on {} threads.", num_threads);
     let mut data = [0u8, ..pixel_count*3u];
     let (tx, rx) = comm::channel();
     let mut points = Vec::with_capacity(pixel_count);
@@ -20,7 +24,7 @@ fn main() {
         }
     }
 
-    let mut jobs = ImageIter::new();
+    let mut jobs = ImageIter::for_image_dimensions(w, h);
     for _ in range(0, num_threads) {
         let proc_tx = tx.clone();
         let job = jobs.next();
@@ -76,68 +80,31 @@ fn main() {
     }
 }
 
-#[deriving(Show)]
-struct ImageIter {
-    x: u32,
-    y: u32,
-    num_tiles_x: u32,
-    num_tiles_y: u32,
-    tile_w: u32,
-    tile_h: u32,
-    end_row_w: u32,
-    end_row_h: u32
-}
-
-impl ImageIter {
-    fn new() -> ImageIter {
-        let (tile_w, tile_h) = (128, 128);
-        ImageIter {
-            x: 0,
-            y: 0,
-            num_tiles_x: w/tile_w,
-            num_tiles_y: h/tile_h,
-            tile_w: tile_w,
-            tile_h: tile_h,
-            end_row_w: w % tile_w,
-            end_row_h: h % tile_h
-        }
-    }
-}
-
-impl Iterator<Rect> for ImageIter {
-    fn next(&mut self) -> Option<Rect> {
-        // If we're on the border of the image, use the potentially
-        // smaller dimensions in order to pad out the image size,
-        // otherwise, use the default tile size.
-        let use_w = if self.x == self.num_tiles_x {
-                       self.end_row_w } else { self.tile_w };
-        let use_h = if self.y == self.num_tiles_y {
-                       self.end_row_h } else { self.tile_h };
-
-        let current = Rect { origin: Point {x: self.x*self.tile_w,
-                                            y: self.y*self.tile_h },
-                             width: use_w,
-                             height: use_h };
-        if self.y > self.num_tiles_y {
-            return None;
-        }
-        self.x += 1;
-        if self.x > self.num_tiles_x {
-            self.x = 0;
-            self.y += 1;
-        }
-
-        // If the current tile has no width or height, go to the next one
-        if current.width == 0 || current.height == 0 {
-            self.next()
-        } else {
-            Some(current)
-        }
-    }
+fn pixel_mapping(point: Point) -> (f32, f32) {
+    let mut x : f32 = point.x as f32;
+    let mut y : f32 = point.y as f32;
+    x *= 2.0; y *= 2.0;
+    x -= w as f32; y -= h as f32;
+    x /= w as f32; y /= w as f32;
+    x *= aspect; y *= aspect;
+    (x, y)
 }
 
 fn generate_pixel(point: Point) -> Pixel {
-    Pixel {r: (point.x % 256) as u8,
-           g: (point.y % 256) as u8,
-           b: 128}
+    let (x, y) = pixel_mapping(point);
+    let c = Complex::new(x, y);
+    let mut z = c.clone();
+    let mut counter = 0;
+    for i in range(0, 64) {
+        counter = i;
+        if z.norm() > 2.0 {
+            break;
+        }
+        z = z*z + c;
+    }
+    
+    let col : u8 = counter * 4;
+    Pixel {r: col,
+           g: col,
+           b: col}
 }
