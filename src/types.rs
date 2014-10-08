@@ -1,5 +1,5 @@
 #[deriving(Clone, Show)]
-pub struct Point {
+pub struct ScreenPoint {
     pub x: u32,
     pub y: u32
 }
@@ -11,30 +11,30 @@ pub struct Pixel {
 }
 #[deriving(Clone, Show)]
 pub struct Rect {
-    pub origin: Point,
+    pub origin: ScreenPoint,
     pub width: u32,
     pub height: u32
 }
 pub struct RectIter {
     pub rect: Rect,
-    pub position: Point
+    pub position: ScreenPoint
 }
 
 impl Rect {
     pub fn iter(&self) -> RectIter {
         RectIter {rect: *self, 
-                  position: Point {x: 0, y: 0}}
+                  position: ScreenPoint {x: 0, y: 0}}
     }
 }
-impl Add<Point, Point> for Point {
-    fn add(&self, rhs: &Point) -> Point {
-        Point {x: self.x + rhs.x,
+impl Add<ScreenPoint, ScreenPoint> for ScreenPoint {
+    fn add(&self, rhs: &ScreenPoint) -> ScreenPoint {
+        ScreenPoint {x: self.x + rhs.x,
                y: self.y + rhs.y}
     }
 }
 
-impl Iterator<Point> for RectIter {
-    fn next(&mut self) -> Option<Point> {
+impl Iterator<ScreenPoint> for RectIter {
+    fn next(&mut self) -> Option<ScreenPoint> {
         if self.position.y >= self.rect.height {
             return None;
         }
@@ -87,8 +87,8 @@ impl Iterator<Rect> for ImageIter {
         let use_h = if self.y == self.num_tiles_y {
                        self.end_row_h } else { self.tile_h };
 
-        let current = Rect { origin: Point {x: self.x*self.tile_w,
-                                            y: self.y*self.tile_h },
+        let current = Rect { origin: ScreenPoint {x: self.x*self.tile_w,
+                                                  y: self.y*self.tile_h },
                              width: use_w,
                              height: use_h };
         if self.y > self.num_tiles_y {

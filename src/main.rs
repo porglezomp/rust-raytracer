@@ -1,9 +1,12 @@
+#![feature(globs)]
+
 extern crate lodepng;
-extern crate num;
+extern crate cgmath;
 
 use std::comm;
-use types::{Point, Pixel, Rect, ImageIter};
-use num::Complex;
+use types::{ScreenPoint, Pixel, Rect, ImageIter};
+use cgmath::*;
+
 mod types;
 
 static h : u32 = 512;
@@ -20,7 +23,7 @@ fn main() {
 
     for x in range(0, w) {
         for y in range(0, h) {
-            points.push(Point {x: x, y: y});
+            points.push(ScreenPoint {x: x, y: y});
         }
     }
 
@@ -70,31 +73,22 @@ fn new_worker(tx: &Sender<(Rect, Vec<Pixel>)>, rect: Rect) {
     });
 }
 
-fn pixel_mapping(point: Point) -> (f32, f32) {
+fn pixel_mapping(point: ScreenPoint) -> (f32, f32) {
     let mut x : f32 = point.x as f32;
     let mut y : f32 = point.y as f32;
     x *= 2.0; y *= 2.0;
     x -= w as f32; y -= h as f32;
     x /= w as f32; y /= w as f32;
     x *= aspect; y *= aspect;
-    (x, y)
+    (x, -y)
 }
 
-fn generate_pixel(point: Point) -> Pixel {
+static camera_pos : Point3<f32> = Point3 {x: 0.0, y: 0.0, z: 0.0};
+fn generate_pixel(point: ScreenPoint) -> Pixel {
     let (x, y) = pixel_mapping(point);
-    let c = Complex::new(x, y);
-    let mut z = c.clone();
-    let mut counter = 0;
-    for i in range(0, 64) {
-        counter = i;
-        if z.norm() > 2.0 {
-            break;
-        }
-        z = z*z + c;
-    }
-    
-    let col : u8 = counter * 4;
-    Pixel {r: col,
-           g: col,
-           b: col}
+    let view_direction = Vector3::new(x, y, 1.0f32).normalize();
+    let view_ray = Ray::new(camera_pos, view_direction);
+    Pixel {r: ((view_direction.x / aspect + 1.0) * 127.0) as u8,
+           g: ((view_direction.y + 1.0) * 127.0) as u8,
+           b: ((view_direction.z + 1.0) * 127.0) as u8}
 }
