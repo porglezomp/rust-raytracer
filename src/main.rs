@@ -2,7 +2,7 @@ extern crate lodepng;
 extern crate num;
 
 use std::comm;
-use types::{Point, Pixel, ImageIter};
+use types::{Point, Pixel, Rect, ImageIter};
 use num::Complex;
 mod types;
 
@@ -26,22 +26,10 @@ fn main() {
 
     let mut jobs = ImageIter::for_image_dimensions(w, h);
     for _ in range(0, num_threads) {
-        let proc_tx = tx.clone();
         let job = jobs.next();
         match job {
             None => break,
-            Some(rect) => {
-                spawn(proc() {
-                    println!("Started a thread!");
-                    let num_pixels = rect.width as uint * rect.height as uint;
-                    let mut pixels = Vec::with_capacity(num_pixels);
-                    for point in rect.iter() {
-                        pixels.push(generate_pixel(point));
-                    }
-                    proc_tx.send((rect, pixels));
-                    println!("One completed!");
-                });
-            }
+            Some(rect) => new_worker(&tx, rect)
         }
     }
     let mut counter = num_threads;
@@ -53,22 +41,10 @@ fn main() {
             data[index + 1] = pixel.g;
             data[index + 2] = pixel.b;
         }
-        let proc_tx = tx.clone();
         let job = jobs.next();
         match job {
             None => counter -= 1,
-            Some(rect) => {
-                spawn(proc() {
-                    println!("Started a thread!");
-                    let num_pixels = rect.width as uint * rect.height as uint;
-                    let mut pixels = Vec::with_capacity(num_pixels);
-                    for point in rect.iter() {
-                        pixels.push(generate_pixel(point));
-                    }
-                    proc_tx.send((rect, pixels));
-                    println!("One completed!");
-                });
-            }
+            Some(rect) => new_worker(&tx, rect)
         }
         if counter == 0 { break };
     }
@@ -78,6 +54,20 @@ fn main() {
         Err(e) => fail!("Error writing: {}", e),
         Ok(_)  => (),
     }
+}
+
+fn new_worker(tx: &Sender<(Rect, Vec<Pixel>)>, rect: Rect) {
+    let proc_tx = tx.clone();
+    spawn(proc() {
+        println!("Started a thread!");
+        let num_pixels = rect.width as uint * rect.height as uint;
+        let mut pixels = Vec::with_capacity(num_pixels);
+        for point in rect.iter() {
+            pixels.push(generate_pixel(point));
+        }
+        proc_tx.send((rect, pixels));
+        println!("One completed!");
+    });
 }
 
 fn pixel_mapping(point: Point) -> (f32, f32) {

@@ -2,9 +2,15 @@
 name = "raytracer"
 version = "0.0.1"
 dependencies = [
+ "cgmath 0.0.1 (git+https://github.com/bjz/cgmath-rs.git#d981c349a0ffb13fb298f1ac1d5e5483ce860a81)",
  "lodepng 0.1.0 (git+https://github.com/pornel/lodepng-rust.git#cb945bbbc980220c8ab9545a5b8695544dce5171)",
  "num 0.0.1 (git+https://github.com/rust-lang/num#9b6e014a8b9be2a312ce304b89a7c0e1ce87396b)",
 ]
+
+[[package]]
+name = "cgmath"
+version = "0.0.1"
+source = "git+https://github.com/bjz/cgmath-rs.git#d981c349a0ffb13fb298f1ac1d5e5483ce860a81"
 
 [[package]]
 name = "lodepng"

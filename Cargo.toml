@@ -11,3 +11,7 @@ git = "https://github.com/pornel/lodepng-rust.git"
 [dependencies.num]
 
 git = "https://github.com/rust-lang/num"
+
+[dependencies.cgmath]
+
+git = "https://github.com/bjz/cgmath-rs.git"
