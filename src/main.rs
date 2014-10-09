@@ -66,14 +66,12 @@ fn main() {
 fn new_worker(tx: &Sender<(Rect, Vec<Pixel>)>, rect: Rect, scene: Scene) {
     let proc_tx = tx.clone();
     spawn(proc() {
-        println!("Started a thread!");
         let num_pixels = rect.width as uint * rect.height as uint;
         let mut pixels = Vec::with_capacity(num_pixels);
         for point in rect.iter() {
             pixels.push(generate_pixel(point, &scene));
         }
         proc_tx.send((rect, pixels));
-        println!("One completed!");
     });
 }
 
