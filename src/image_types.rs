@@ -10,11 +10,18 @@ pub struct Pixel {
     pub b: u8
 }
 #[deriving(Clone, Show)]
+pub struct Color {
+    pub r: f32,
+    pub g: f32,
+    pub b: f32
+}
+#[deriving(Clone, Show)]
 pub struct Rect {
     pub origin: ScreenPoint,
     pub width: u32,
     pub height: u32
 }
+#[deriving(Clone, Show)]
 pub struct RectIter {
     pub rect: Rect,
     pub position: ScreenPoint

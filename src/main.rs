@@ -4,10 +4,12 @@ extern crate lodepng;
 extern crate cgmath;
 
 use std::comm;
-use types::{ScreenPoint, Pixel, Rect, ImageIter};
 use cgmath::*;
+use image_types::{ScreenPoint, Pixel, Rect, ImageIter};
+use scene::Scene;
 
-mod types;
+mod image_types;
+mod scene;
 
 static h : u32 = 512;
 static w : u32 = 1024;
@@ -15,6 +17,8 @@ static aspect : f32 = w as f32 / h as f32;
 static pixel_count : uint = (w*h) as uint;
 
 fn main() {
+    let filename = "scene.json";
+    let scene = scene::build_scene(filename.as_slice());
     let num_threads = std::rt::default_sched_threads();
     println!("Working on {} threads.", num_threads);
     let mut data = [0u8, ..pixel_count*3u];
@@ -32,7 +36,7 @@ fn main() {
         let job = jobs.next();
         match job {
             None => break,
-            Some(rect) => new_worker(&tx, rect)
+            Some(rect) => new_worker(&tx, rect, scene.clone())
         }
     }
     let mut counter = num_threads;
@@ -47,7 +51,7 @@ fn main() {
         let job = jobs.next();
         match job {
             None => counter -= 1,
-            Some(rect) => new_worker(&tx, rect)
+            Some(rect) => new_worker(&tx, rect, scene.clone())
         }
         if counter == 0 { break };
     }
@@ -59,14 +63,14 @@ fn main() {
     }
 }
 
-fn new_worker(tx: &Sender<(Rect, Vec<Pixel>)>, rect: Rect) {
+fn new_worker(tx: &Sender<(Rect, Vec<Pixel>)>, rect: Rect, scene: Scene) {
     let proc_tx = tx.clone();
     spawn(proc() {
         println!("Started a thread!");
         let num_pixels = rect.width as uint * rect.height as uint;
         let mut pixels = Vec::with_capacity(num_pixels);
         for point in rect.iter() {
-            pixels.push(generate_pixel(point));
+            pixels.push(generate_pixel(point, &scene));
         }
         proc_tx.send((rect, pixels));
         println!("One completed!");
@@ -84,11 +88,12 @@ fn pixel_mapping(point: ScreenPoint) -> (f32, f32) {
 }
 
 static camera_pos : Point3<f32> = Point3 {x: 0.0, y: 0.0, z: 0.0};
-fn generate_pixel(point: ScreenPoint) -> Pixel {
+fn generate_pixel(point: ScreenPoint, scene: &Scene) -> Pixel {
     let (x, y) = pixel_mapping(point);
     let view_direction = Vector3::new(x, y, 1.0f32).normalize();
     let view_ray = Ray::new(camera_pos, view_direction);
-    Pixel {r: ((view_direction.x / aspect + 1.0) * 127.0) as u8,
-           g: ((view_direction.y + 1.0) * 127.0) as u8,
-           b: ((view_direction.z + 1.0) * 127.0) as u8}
+    let c = scene.trace_ray(&view_ray);
+    Pixel {r: (c.r * 255.0) as u8,
+           g: (c.g * 255.0) as u8,
+           b: (c.b * 255.0) as u8}
 }
