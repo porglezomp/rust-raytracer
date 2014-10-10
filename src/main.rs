@@ -12,8 +12,8 @@ use scene::Scene;
 mod image_types;
 mod scene;
 
-static h : u32 = 512;
-static w : u32 = 1024;
+static w : u32 = 640;
+static h : u32 = 480;
 static aspect : f32 = w as f32 / h as f32;
 static pixel_count : uint = (w*h) as uint;
 
@@ -32,15 +32,18 @@ fn main() {
         }
     }
 
+    let mut counter = 0u;
     let mut jobs = ImageIter::for_image_dimensions(w, h);
     for _ in range(0, num_threads) {
         let job = jobs.next();
         match job {
             None => break,
-            Some(rect) => new_worker(&tx, rect, scene.clone())
+            Some(rect) => {
+                counter += 1;
+                new_worker(&tx, rect, scene.clone())
+            }
         }
     }
-    let mut counter = num_threads;
     loop {
         let (rect, pixels) = rx.recv();
         for (point, pixel) in rect.iter().zip(pixels.iter()) {
@@ -86,10 +89,10 @@ fn pixel_mapping(point: ScreenPoint) -> (f32, f32) {
     (x, -y)
 }
 
-static camera_pos : Point3<f32> = Point3 {x: 0.0, y: 0.0, z: 0.0};
+static camera_pos : Point3<f32> = Point3 {x: 0.0, y: -2.0, z: 0.0};
 fn generate_pixel(point: ScreenPoint, scene: &Arc<Scene>) -> Pixel {
     let (x, y) = pixel_mapping(point);
-    let view_direction = Vector3::new(x, y, 1.0f32).normalize();
+    let view_direction = Vector3::new(x, 1.0f32, y).normalize();
     let view_ray = Ray::new(camera_pos, view_direction);
     let c = scene.trace_ray(&view_ray);
     Pixel {r: (c.r * 255.0) as u8,
