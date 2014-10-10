@@ -1,35 +1,28 @@
 extern crate cgmath;
 
-use std::rc::Rc;
+//use std::rc::Rc;
+use std::collections::DList;
 use image_types::Color;
-use cgmath::{EuclideanVector, Point};
+use cgmath::{EuclideanVector, Point, Vector};
 use cgmath::{Vector3, Point3, Ray3};
 use cgmath::{dot};
 
-#[deriving(Show, Clone)]
 struct Sphere {
     pos: Point3<f32>,
     radius: f32
 }
 
-#[deriving(Clone)]
 pub struct Scene {
     objects: Vec<SceneObject>
 }
 
-#[deriving(Clone)]
 struct Material {
     color: Color
 }
 
-#[deriving(Clone)]
 struct SceneObject {
     material: Material,
-    geometry: Sphere
-}
-
-enum Geometry {
-    SphereGeometry(Sphere)
+    geometry: Box<Intersectable+Send+Sync+'static>
 }
 
 struct SceneLight {
@@ -41,9 +34,9 @@ struct SceneLight {
 pub fn build_scene(filename: &str) -> Scene {
     let mat1 = Material { color: Color { r: 0.9, g: 0.9, b: 0.9 } };
     let mat2 = Material { color: Color { r: 1.0, g: 0.0, b: 0.4 } };
-    let objs = vec![SceneObject { geometry: Sphere::new((0.0, 0.0, 2.0), 1.0),
+    let objs = vec![SceneObject { geometry: box Sphere::new((0.0, 0.0, 2.0), 1.0),
                                   material: mat1 },
-                    SceneObject { geometry: Sphere::new((0.0, 2.0, 4.0), 3.0),
+                    SceneObject { geometry: box Sphere::new((0.0, 2.0, 4.0), 3.0),
                                   material: mat2 }];
                   
     Scene { objects: objs }
@@ -66,7 +59,12 @@ impl Scene {
             }
         }
         match closest {
-            Some(object) => object.material.color,
+            Some(object) => {
+                let point = ray.direction.mul_s(closest_distance);
+                let intersection = object.geometry.intersection_info(&Point::from_vec(&point));
+                let Vector3 { x, y, z } = intersection.normal;
+                Color { r: x, g: y, b: z }
+            }
             None         => sky_color(&ray.direction)
         }
         
@@ -100,6 +98,11 @@ impl Intersectable for Sphere {
             None
         }
     }
+
+    fn intersection_info(&self, point: &Point3<f32>) -> Intersection {
+        let normal = point.sub_p(&self.pos).normalize();
+        Intersection { point: point.clone(), normal: normal }
+    }
 }
 
 struct Intersection {
@@ -109,6 +112,7 @@ struct Intersection {
 
 trait Intersectable {
     fn intersection(&self, ray: &Ray3<f32>) -> Option<f32>;
+    fn intersection_info(&self, point: &Point3<f32>) -> Intersection;
 }
 
-
+//trait Light {}

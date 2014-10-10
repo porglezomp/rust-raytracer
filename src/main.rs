@@ -3,6 +3,7 @@
 extern crate lodepng;
 extern crate cgmath;
 
+use std::sync::Arc;
 use std::comm;
 use cgmath::*;
 use image_types::{ScreenPoint, Pixel, Rect, ImageIter};
@@ -18,7 +19,7 @@ static pixel_count : uint = (w*h) as uint;
 
 fn main() {
     let filename = "scene.json";
-    let scene = scene::build_scene(filename.as_slice());
+    let scene = Arc::new(scene::build_scene(filename.as_slice()));
     let num_threads = std::rt::default_sched_threads();
     println!("Working on {} threads.", num_threads);
     let mut data = [0u8, ..pixel_count*3u];
@@ -63,7 +64,7 @@ fn main() {
     }
 }
 
-fn new_worker(tx: &Sender<(Rect, Vec<Pixel>)>, rect: Rect, scene: Scene) {
+fn new_worker(tx: &Sender<(Rect, Vec<Pixel>)>, rect: Rect, scene: Arc<Scene>) {
     let proc_tx = tx.clone();
     spawn(proc() {
         let num_pixels = rect.width as uint * rect.height as uint;
@@ -86,7 +87,7 @@ fn pixel_mapping(point: ScreenPoint) -> (f32, f32) {
 }
 
 static camera_pos : Point3<f32> = Point3 {x: 0.0, y: 0.0, z: 0.0};
-fn generate_pixel(point: ScreenPoint, scene: &Scene) -> Pixel {
+fn generate_pixel(point: ScreenPoint, scene: &Arc<Scene>) -> Pixel {
     let (x, y) = pixel_mapping(point);
     let view_direction = Vector3::new(x, y, 1.0f32).normalize();
     let view_ray = Ray::new(camera_pos, view_direction);
