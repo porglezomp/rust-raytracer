@@ -115,3 +115,34 @@ impl Iterator<Rect> for ImageIter {
         }
     }
 }
+
+fn saturate(x: f32) -> f32 {
+    match x {
+        _ if x < 0.0 => 0.0,
+        _ if x > 1.0 => 1.0,
+        x            => x
+    }
+}
+
+impl Color {
+    pub fn mul_c(&self, other: &Color) -> Color {
+        Color { r: self.r * other.r,
+                g: self.g * other.g,
+                b: self.b * other.b }
+    }
+    pub fn mul_s(&self, other: f32) -> Color {
+        Color { r: self.r * other,
+                g: self.g * other,
+                b: self.b * other }
+    }
+    pub fn add_c(&self, other: &Color) -> Color {
+        Color { r: self.r + other.r,
+                g: self.g + other.g,
+                b: self.b + other.b }
+    }
+    pub fn saturate(&self) -> Color {
+        Color { r: saturate(self.r),
+                g: saturate(self.g),
+                b: saturate(self.b) }
+    }
+}

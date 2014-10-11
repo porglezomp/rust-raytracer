@@ -94,8 +94,13 @@ fn generate_pixel(point: ScreenPoint, scene: &Arc<Scene>) -> Pixel {
     let (x, y) = pixel_mapping(point);
     let view_direction = Vector3::new(x, 1.0f32, y).normalize();
     let view_ray = Ray::new(camera_pos, view_direction);
-    let c = scene.trace_ray(&view_ray);
+    let c = scene.trace_ray(&view_ray).saturate();
     Pixel {r: (c.r * 255.0) as u8,
            g: (c.g * 255.0) as u8,
            b: (c.b * 255.0) as u8}
 }
+
+
+
+
+
