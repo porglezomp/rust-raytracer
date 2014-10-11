@@ -2,6 +2,7 @@
 
 extern crate lodepng;
 extern crate cgmath;
+extern crate serialize;
 
 use std::sync::Arc;
 use std::comm;
@@ -99,8 +100,3 @@ fn generate_pixel(point: ScreenPoint, scene: &Arc<Scene>) -> Pixel {
            g: (c.g * 255.0) as u8,
            b: (c.b * 255.0) as u8}
 }
-
-
-
-
-

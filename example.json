@@ -9,7 +9,7 @@
             "color": [0.8, 0.8, 0.8]
         }
     ],
-    "objects": [
+    "scene": [
         {
             "type": "sphere",
             "material": "grey",
@@ -19,7 +19,7 @@
                 {
                     "type": "sphere",
                     "material": "white",
-                    "pos": [0, 0, 1],
+                    "position": [0, 0, 1],
                     "radius": 0.5
                 },
                 {
@@ -29,7 +29,7 @@
                     "intensity": 0.5
                 }
             ]
-        }
+        },
     ],
     "tmp": {
         "type": "directional light",
