@@ -1,0 +1,40 @@
+{
+    "materials": [
+        {
+            "name": "white",
+            "color": [1.0, 1.0, 1.0]
+        },
+        {
+            "name": "grey",
+            "color": [0.8, 0.8, 0.8]
+        }
+    ],
+    "scene": [
+        {
+            "type": "sphere",
+            "material": "grey",
+            "pos": [0, 0, 0],
+            "radius": 0.9,
+            "children": [
+                {
+                    "type": "sphere",
+                    "material": "white",
+                    "pos": [0, 0, 1],
+                    "radius": 0.5
+                },
+                {
+                    "type": "point light",
+                    "color": [1, 0.2, 0],
+                    "position": [0, 0, 2],
+                    "intensity": 0.5
+                }
+            ]
+        },
+        {
+            "type": "directional light",
+            "color": [1, 1, 1],
+            "direction": [0, 0, -1],
+            "intensity": 1
+        }
+    ]
+}
