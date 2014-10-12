@@ -5,44 +5,48 @@
             "color": [1.0, 1.0, 1.0]
         },
         {
-            "name": "grey",
-            "color": [0.8, 0.8, 0.8]
+            "name": "red",
+            "color": [1.0, 0.3, 0.2]
         }
     ],
     "objects": [
         {
             "type": "sphere",
-            "material": "grey",
-            "position": [0, 0, 0],
-            "radius": 0.9,
-            "children": [
-                {
-                    "type": "sphere",
-                    "material": "white",
-                    "pos": [0, 0, 1],
-                    "radius": 0.5
-                }
-            ]
+            "material": "white",
+            "position": [0, 0, -0.5],
+            "radius": 0.9
+        },
+        {
+            "type": "sphere",
+            "material": "white",
+            "position": [0, 0, 0.4],
+            "radius": 0.6
+        },
+        {
+            "type": "sphere",
+            "material": "red",
+            "position": [0, 0, 1],
+            "radius": 0.3
+        },
+        {
+            "type": "sphere",
+            "material": "white",
+            "position": [0, 0, -100.7],
+            "radius": 100
         }
     ],
     "lights": [
         {
             "type": "point light",
-            "color": [1, 0, 0],
+            "color": [0.6, 0.8, 1],
             "position": [0, -1, 2],
             "intensity": 0.5
         },
         {
             "type": "point light",
-            "color": [0, 0, 1],
-            "position": [2, -1, 0],
-            "intensity": 0.5
-        },
-        {
-            "type": "point light",
-            "color": [0, 1, 0],
-            "position": [-2, -1, -2],
-            "intensity": 0.5
+            "color": [1, 0.9, 0.8],
+            "position": [2, 0.5, 2],
+            "intensity": 0.7
         }
     ],
     "tmp": {

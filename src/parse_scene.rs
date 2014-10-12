@@ -12,7 +12,7 @@ use image_types::Color;
 use cgmath::{EuclideanVector, Point, Vector};
 use cgmath::{Vector3, Point3, Ray3, Ray};
 
-pub fn parse_scene(filename: &str) -> (TreeMap<String, Material>, Vec<SceneObject>, Vec<SceneLight>) {
+pub fn parse_scene(filename: &str) -> (TreeMap<String, Arc<Material>>, Vec<SceneObject>, Vec<SceneLight>) {
     let path = Path::new(filename);
     let contents = File::open(&path).read_to_end();
     let content = 
@@ -35,7 +35,7 @@ pub fn parse_scene(filename: &str) -> (TreeMap<String, Material>, Vec<SceneObjec
 
             let objects_json = contents.find(&"objects".to_string())
                                        .expect("JSON missing objects section.");
-            objects = parse_objects(objects_json);
+            objects = parse_objects(objects_json, &materials);
 
             let lights_json = contents.find(&"lights".to_string())
                                       .expect("JSON missing lights section.");
@@ -47,7 +47,7 @@ pub fn parse_scene(filename: &str) -> (TreeMap<String, Material>, Vec<SceneObjec
     (materials, objects, lights)
 }
 
-fn parse_materials(materials_json: &Json) -> TreeMap<String, Material> {
+fn parse_materials(materials_json: &Json) -> TreeMap<String, Arc<Material>> {
     let mut material_map = TreeMap::new();
     let materials = materials_json.as_list()
                                   .expect("Materials isn't a list");
@@ -60,7 +60,7 @@ fn parse_materials(materials_json: &Json) -> TreeMap<String, Material> {
     material_map
 }
 
-fn parse_mat(material_json: &Json) -> (String, Material) {
+fn parse_mat(material_json: &Json) -> (String, Arc<Material>) {
     let name = material_json.find(&"name".to_string())
                             .expect("Material missing name")
                             .as_string()
@@ -78,21 +78,21 @@ fn parse_mat(material_json: &Json) -> (String, Material) {
                                         g: g,
                                         b: b }
                          };
-    (name.to_string(), mat)
+    (name.to_string(), Arc::new(mat))
 }
 
-fn parse_objects(objects_json: &Json) -> Vec<SceneObject> {
+fn parse_objects(objects_json: &Json, materials: &TreeMap<String, Arc<Material>>) -> Vec<SceneObject> {
     let objects = objects_json.as_list()
                               .expect("Objects isn't a list");
     let mut scene_objects = Vec::with_capacity(objects.len());
     for object in objects.iter() {
-        let obj = parse_obj(object);
+        let obj = parse_obj(object, materials);
         scene_objects.push(obj);
     }
     scene_objects
 }
 
-fn parse_obj(object_json: &Json) -> SceneObject {
+fn parse_obj(object_json: &Json, materials: &TreeMap<String, Arc<Material>>) -> SceneObject {
     let object = object_json.as_object()
                             .expect("Object isn't a JSON object");
     let object_type = object.find(&"type".to_string())
@@ -102,10 +102,12 @@ fn parse_obj(object_json: &Json) -> SceneObject {
     if object_type.as_slice() != "sphere" {
         fail!("Only spheres are currently supported!");
     }
-    let material = object.find(&"material".to_string())
+    let mat_name = object.find(&"material".to_string())
                          .expect("Object doesn't have a material")
                          .as_string()
                          .expect("Object material isn't a string");
+    let material = materials.find(&mat_name.to_string())
+                            .expect(format!("No material with name '{}'", mat_name).as_slice());
     let pos = object.find(&"position".to_string())
                     .expect("Object doesn't have a position")
                     .as_list()
@@ -118,7 +120,7 @@ fn parse_obj(object_json: &Json) -> SceneObject {
     let y = pos[1].as_f64().expect("Position should only contain numbers") as f32;
     let z = pos[2].as_f64().expect("Position should only contain numbers") as f32;
     SceneObject { geometry: box Sphere::new((x, y, z), radius),
-                  material: Arc::new(Material{ color: Color { r: 1.0, g: 1.0, b: 1.0} }) }
+                  material: material.clone() }
 }
 
 fn parse_lights(lights_json: &Json) -> Vec<SceneLight> {
