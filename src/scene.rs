@@ -1,20 +1,13 @@
-use std::collections::TreeMap;
-use serialize::json::ToJson;
-use std::str;
-use serialize::json::Json;
-use serialize::json::{Object, List};
-//use serialize::{json, Encodable, Decodable};
-use serialize::json;
-use std::io::File;
+use parse_scene::parse_scene;
 use std::sync::Arc;
 use image_types::Color;
 use cgmath::{EuclideanVector, Point, Vector};
 use cgmath::{Vector3, Point3, Ray3, Ray};
 use cgmath::{dot};
 
-struct Sphere {
-    pos: Point3<f32>,
-    radius: f32
+pub struct Sphere {
+    pub pos: Point3<f32>,
+    pub radius: f32
 }
 
 pub struct Scene {
@@ -22,134 +15,25 @@ pub struct Scene {
     lights: Vec<SceneLight>
 }
 
-struct Material {
-    color: Color
+pub struct Material {
+    pub color: Color
 }
 
-struct SceneObject {
-    material: Arc<Material>,
-    geometry: Box<Intersectable+Send+Sync+'static>
+pub struct SceneObject {
+    pub material: Arc<Material>,
+    pub geometry: Box<Intersectable+Send+Sync+'static>
 }
 
-struct SceneLight {
-    pos: Point3<f32>,
-    color: Color,
-    intensity: f32
+pub struct SceneLight {
+    pub pos: Point3<f32>,
+    pub color: Color,
+    pub intensity: f32
 }
+
 pub fn build_scene(filename: &str) -> Scene {
-    let path = Path::new(filename);
-    let contents = File::open(&path).read_to_end();
-    let content = 
-        match contents {
-            Err(err) => fail!("Error reading {}: {}", path.display(), err),
-            Ok(text) => text
-        };
-    let content_string = str::from_utf8(content.as_slice())
-                         .expect("Couldn't unwrap string as UTF-8");
-    let json_object = json::from_str(content_string).unwrap();
-
-    let mut materials;
-    let mut objects;
-    match json_object {
-        Object(contents) => {
-            let material_json = contents.find(&"materials".to_string())
-                                        .expect("JSON missing materials section.");
-            materials = parse_materials(material_json);
-
-            let objects_json = contents.find(&"objects".to_string())
-                                       .expect("JSON missing objects section.");
-            objects = parse_objects(objects_json);
-        }
-        _ => fail!("Error, top level of scene file isn't an object.")
-    }
-    
-    let mat1 = Arc::new(Material { color: Color { r: 0.9, g: 0.9, b: 0.9 } });
-    let mut objs = vec![ 
-        SceneObject { geometry: box Sphere::new((0.0, 0.0, -101.0), 100.0),
-                      material: mat1.clone() }];
-    for i in range(0u, 10) {
-        let angle = i as f32 / 5.0 * 3.141592654;
-        objs.push( SceneObject { geometry: box Sphere::new((angle.sin(), angle.cos(), -1.0), 0.3),
-                                 material: mat1.clone() });
-    }
-    let lights = vec![
-        SceneLight { pos: Point3::new(2.0, -1.0, 2.0),
-                     color: Color { r: 1.0, g: 0.9, b: 0.6 },
-                     intensity: 1.0 },
-        SceneLight { pos: Point3::new(-2.0, -1.0, 3.0),
-                     color: Color { r: 0.8, g: 0.9, b: 1.0 },
-                     intensity: 1.0 }
-        ];
-                  
+    let (materials, objects, lights) = parse_scene(filename);
     Scene { objects: objects,
             lights: lights}
-}
-
-fn parse_materials(materials_json: &Json) -> TreeMap<String, String> {
-    let mut material_map = TreeMap::new();
-    let materials = materials_json.as_list()
-                                  .expect("Materials isn't a list");
-        
-    for material in materials.iter() {
-        let (name, mat) = parse_mat(material);
-        material_map.insert(name, mat);
-    }
-        
-    material_map
-}
-
-fn parse_mat(material_json: &Json) -> (String, String) {
-    let name = material_json.find(&"name".to_string())
-                            .expect("Material missing name")
-                            .as_string()
-                            .expect("Name is not a string");
-    
-    let color = material_json.find(&"color".to_string())
-                             .expect("Material missing color")
-                             .as_list()
-                             .expect("Color not of format [r, g, b]");
-
-    (name.to_string(), format!("{}", color))
-}
-
-fn parse_objects(objects_json: &Json) -> Vec<SceneObject> {
-    let objects = objects_json.as_list()
-                              .expect("Objects isn't a list");
-    let mut scene_objects = Vec::with_capacity(objects.len());
-    for object in objects.iter() {
-        let obj = parse_obj(object);
-        scene_objects.push(obj);
-    }
-    scene_objects
-}
-
-fn parse_obj(object_json: &Json) -> SceneObject {
-    let object = object_json.as_object()
-                            .expect("Object isn't json");
-    let object_type = object.find(&"type".to_string())
-                            .expect("Object doesn't have a type")
-                            .as_string()
-                            .expect("Object type isn't a string");
-    if object_type.as_slice() != "sphere" {
-        fail!("Only spheres are currently supported!");
-    }
-    let material = object.find(&"material".to_string())
-                         .expect("Object doesn't have a material")
-                         .as_string()
-                         .expect("Object material isn't a string");
-    let pos = object.find(&"position".to_string())
-                    .expect("Object doesn't have a position")
-                    .as_list()
-                    .expect("Object position isn't of form [x, y, z]");
-    let radius = object.find(&"radius".to_string())
-                       .expect("Object doesn't have a radius")
-                       .as_f64()
-                       .expect("Object radius isn't a number") as f32;
-    let x = pos[0].as_f64().expect("Position should only contain numbers") as f32;
-    let y = pos[1].as_f64().expect("Position should only contain numbers") as f32;
-    let z = pos[2].as_f64().expect("Position should only contain numbers") as f32;
-    SceneObject { geometry: box Sphere::new((x, y, z), radius),
-                  material: Arc::new(Material{ color: Color { r: 1.0, g: 1.0, b: 1.0} }) }
 }
 
 impl Scene {
@@ -231,7 +115,7 @@ fn sky_color(direction: &Vector3<f32>) -> Color {
 }
 
 impl Sphere {
-    fn new(origin: (f32, f32, f32), radius: f32) -> Sphere {
+    pub fn new(origin: (f32, f32, f32), radius: f32) -> Sphere {
         let (x, y, z) = origin;
         Sphere { pos: Point3 {x: x, y: y, z: z},
                  radius: radius }

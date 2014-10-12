@@ -12,6 +12,7 @@ use scene::Scene;
 
 mod image_types;
 mod scene;
+mod parse_scene;
 
 static w : u32 = 640;
 static h : u32 = 480;

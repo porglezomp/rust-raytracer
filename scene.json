@@ -21,14 +21,28 @@
                     "material": "white",
                     "pos": [0, 0, 1],
                     "radius": 0.5
-                },
-                {
-                    "type": "point light",
-                    "color": [1, 0.2, 0],
-                    "position": [0, 0, 2],
-                    "intensity": 0.5
                 }
             ]
+        }
+    ],
+    "lights": [
+        {
+            "type": "point light",
+            "color": [1, 0, 0],
+            "position": [0, -1, 2],
+            "intensity": 0.5
+        },
+        {
+            "type": "point light",
+            "color": [0, 0, 1],
+            "position": [2, -1, 0],
+            "intensity": 0.5
+        },
+        {
+            "type": "point light",
+            "color": [0, 1, 0],
+            "position": [-2, -1, -2],
+            "intensity": 0.5
         }
     ],
     "tmp": {
@@ -37,4 +51,5 @@
         "direction": [0, 0, -1],
         "intensity": 1
     }
+
 }
