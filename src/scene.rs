@@ -31,7 +31,7 @@ pub struct SceneLight {
 }
 
 pub fn build_scene(filename: &str) -> Scene {
-    let (materials, objects, lights) = parse_scene(filename);
+    let (objects, lights) = parse_scene(filename);
     Scene { objects: objects,
             lights: lights}
 }
