@@ -1,8 +1,8 @@
-   ---
-   layout: post
-   title: Hello, World!
-   categories:
-   ---
+---
+layout: post
+title: Hello, World
+categories:
+---
 
 I started work on this ray-tracer in order to try to learn [Rust](http://rust-lang.org), and because I haven't ever made a good ray-tracer before. I started work on this blog in order to document the process I followed to produce this ray-tracer, and hope that it may prove useful to someone else trying to learn rust.
 
