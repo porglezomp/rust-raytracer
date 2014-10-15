@@ -1,4 +1,4 @@
-use scene::{Sphere, SceneObject, SceneLight, Material};
+use scene::{Sphere, SceneObject, SceneLight, Material, DirectionalLight};
 use std::collections::TreeMap;
 use std::str;
 use serialize::json::{Json, Object};
@@ -6,7 +6,7 @@ use serialize::json;
 use std::io::File;
 use std::sync::Arc;
 use image_types::Color;
-use cgmath::Point3;
+use cgmath::{Point3, Vector3, Vector, EuclideanVector};
 
 pub fn parse_scene(filename: &str) -> (Vec<SceneObject>, Vec<SceneLight>) {
     let path = Path::new(filename);
@@ -133,7 +133,14 @@ fn parse_lights(lights_json: &Json) -> Vec<SceneLight> {
 fn parse_light(light_json: &Json) -> SceneLight {
     let light = light_json.as_object()
                           .expect("Light isn't a JSON object");
-    let pos = light.find(&"position".to_string())
+
+    let light_type = light.find(&"type".to_string())
+                          .expect("Light doesn't have a type")
+                          .as_string()
+                          .expect("Light type isn't a string");
+    assert!(light_type.as_slice() == "directional light",
+            "only directional lights are currently supported");
+    let pos = light.find(&"direction".to_string())
                         .expect("Light doesn't have a position")
                         .as_list()
                         .expect("Light position isn't of form [x, y, z]");
@@ -152,7 +159,9 @@ fn parse_light(light_json: &Json) -> SceneLight {
     let g = color[1].as_f64().expect("Color should only contain numbers") as f32;
     let b = color[2].as_f64().expect("Color should only contain numbers") as f32;
 
-    SceneLight { pos: Point3::new(x, y, z),
-                 color: Color { r: r, g: g, b: b },
-                 intensity: intensity }
+    let light_object = DirectionalLight { direction: Vector3::new(x, y, z).normalize(),
+                                          color: Color { r: r, g: g, b: b },
+                                          intensity: intensity,
+                                          angle: 0.0 };
+    SceneLight { illuminator: box light_object }
 }

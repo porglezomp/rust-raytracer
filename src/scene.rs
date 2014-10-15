@@ -4,10 +4,11 @@ use image_types::Color;
 use cgmath::{EuclideanVector, Point, Vector};
 use cgmath::{Vector3, Point3, Ray3, Ray};
 use cgmath::{dot};
+use std::fmt::{Show, Formatter, FormatError};
 
 pub struct Sphere {
-    pub pos: Point3<f32>,
-    pub radius: f32
+    pos: Point3<f32>,
+    radius: f32
 }
 
 pub struct Scene {
@@ -24,14 +25,29 @@ pub struct SceneObject {
     pub geometry: Box<Intersectable+Send+Sync+'static>
 }
 
-pub struct SceneLight {
-    pub pos: Point3<f32>,
+pub struct PointLight {
+    pub position: Point3<f32>,
     pub color: Color,
-    pub intensity: f32
+    pub intensity: f32,
+    pub radius: f32
+}
+
+pub struct DirectionalLight {
+    pub direction: Vector3<f32>,
+    pub color: Color,
+    pub intensity: f32,
+    pub angle: f32
+}
+
+pub struct SceneLight {
+    pub illuminator: Box<Illuminator+Send+Sync+'static>
 }
 
 pub fn build_scene(filename: &str) -> Scene {
     let (objects, lights) = parse_scene(filename);
+    for object in lights.iter() {
+        println!("{}", object);
+    }
     Scene { objects: objects,
             lights: lights}
 }
@@ -66,7 +82,7 @@ impl Scene {
         }
     }
 
-    pub fn check_ray(&self, ray: &Ray3<f32>) -> bool {
+   pub fn check_ray(&self, ray: &Ray3<f32>) -> bool {
         for object in self.objects.iter() {
             match object.geometry.intersection(ray) {
                 Some(_) => return true,
@@ -89,13 +105,7 @@ impl Scene {
     pub fn light_diffuse(&self, point: &Point3<f32>, normal: &Vector3<f32>) -> Color {
         let mut total_light = Color { r: 0.0, g: 0.0, b: 0.0 };
         for light in self.lights.iter() {
-            let light_direction = light.pos.sub_p(&Point::origin()).normalize();
-        
-            if !self.check_ray(&Ray::new(*point, light_direction)) {
-                let diff = saturate(dot(*normal, light_direction));
-                total_light = total_light.add_c(&light.color.mul_s(light.intensity * diff));
-                    
-            }
+            total_light = total_light.add_c(&light.illuminate(self, point, normal));
         }
         total_light
     }
@@ -121,6 +131,7 @@ impl Sphere {
                  radius: radius }
     }
 }
+
 impl Intersectable for Sphere {
     fn intersection(&self, ray: &Ray3<f32>) -> Option<f32> {
         // Optimized ray-sphere intersection
@@ -150,6 +161,35 @@ impl Intersectable for Sphere {
     }
 }
 
+impl Illuminator for SceneLight {
+    fn illuminate(&self, scene: &Scene, point: &Point3<f32>, normal: &Vector3<f32>) -> Color {
+        let off_surface_point = &point.add_v(&normal.mul_s(0.0001));
+        self.illuminator.illuminate(scene, off_surface_point, normal)
+    }
+}
+
+impl Illuminator for DirectionalLight {
+    fn illuminate(&self, scene: &Scene, point: &Point3<f32>, normal: &Vector3<f32>) -> Color {
+        if !scene.check_ray(&Ray::new(*point, self.direction)) {
+            let diff = saturate(dot(*normal, self.direction));
+            let color = self.color.mul_s(self.intensity * diff);
+            color
+            
+        } else {
+            Color { r: 0.0,
+                    g: 0.0,
+                    b: 0.0 }
+        }
+    }
+}
+
+impl Show for SceneLight {
+    fn fmt(&self, format: &mut Formatter) -> Result<(), FormatError> {
+        format.write_str("This is a light!");
+        Ok(())
+    }
+}
+
 struct Intersection {
     point: Point3<f32>,
     normal: Vector3<f32>
@@ -160,4 +200,6 @@ trait Intersectable {
     fn intersection_info(&self, point: &Point3<f32>) -> Intersection;
 }
 
-//trait Light {}
+trait Illuminator {
+    fn illuminate(&self, scene: &Scene, point: &Point3<f32>, normal: &Vector3<f32>) -> Color;
+}
