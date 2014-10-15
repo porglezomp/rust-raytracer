@@ -1,4 +1,5 @@
 ---
+layout: post
 title: Polymorphic Lighting
 commit: f75ad820e36cf8748da20bc423a1bc45a6197663
 ---
