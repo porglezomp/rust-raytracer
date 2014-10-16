@@ -13,20 +13,20 @@
         {
             "type": "sphere",
             "material": "white",
-            "position": [0, 0, -0.5],
-            "radius": 0.9
+            "position": [1.5, 0, -0.5],
+            "radius": 0.5
         },
         {
             "type": "sphere",
             "material": "white",
-            "position": [0, 0, 0.4],
-            "radius": 0.6
+            "position": [-1.5, 0, -0.5],
+            "radius": 0.5
         },
         {
             "type": "sphere",
-            "material": "red",
-            "position": [0, 0, 1],
-            "radius": 0.3
+            "material": "white",
+            "position": [0, 1.5, -0.5],
+            "radius": 0.5
         },
         {
             "type": "sphere",
@@ -37,9 +37,27 @@
     ],
     "lights": [
         {
-            "type": "directional light",
+            "type": "point light",
+            "position": [0, 0, 1],
             "color": [1, 1, 1],
-            "direction": [0, 0, 1],
+            "intensity": 2.0
+        },
+        {
+            "type": "point light",
+            "position": [1, 0, 1],
+            "color": [1, 0, 0],
+            "intensity": 1.0
+        },
+        {
+            "type": "point light",
+            "position": [-1, 0, 1],
+            "color": [0, 1, 0],
+            "intensity": 1.0
+        },
+        {
+            "type": "point light",
+            "position": [0, 1, 1],
+            "color": [0, 0, 1],
             "intensity": 1.0
         }
     ],

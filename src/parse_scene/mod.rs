@@ -8,6 +8,8 @@ use std::sync::Arc;
 use image_types::Color;
 use cgmath::{Point3, Vector3, Vector, EuclideanVector};
 
+mod lights;
+
 pub fn parse_scene(filename: &str) -> (Vec<SceneObject>, Vec<SceneLight>) {
     let path = Path::new(filename);
     let contents = File::open(&path).read_to_end();
@@ -35,7 +37,7 @@ pub fn parse_scene(filename: &str) -> (Vec<SceneObject>, Vec<SceneLight>) {
 
             let lights_json = contents.find(&"lights".to_string())
                                       .expect("JSON missing lights section.");
-            lights = parse_lights(lights_json);
+            lights = lights::parse_lights(lights_json);
         }
         _ => fail!("Error, top level of scene file isn't an object.")
     }
@@ -117,51 +119,4 @@ fn parse_obj(object_json: &Json, materials: &TreeMap<String, Arc<Material>>) -> 
     let z = pos[2].as_f64().expect("Position should only contain numbers") as f32;
     SceneObject { geometry: box Sphere::new((x, y, z), radius),
                   material: material.clone() }
-}
-
-fn parse_lights(lights_json: &Json) -> Vec<SceneLight> {
-    let lights = lights_json.as_list()
-                            .expect("Lights ins't a list");
-    let mut scene_lights = Vec::with_capacity(lights.len());
-    for light in lights.iter() {
-        let lght = parse_light(light);
-        scene_lights.push(lght);
-    }
-    scene_lights
-}
-
-fn parse_light(light_json: &Json) -> SceneLight {
-    let light = light_json.as_object()
-                          .expect("Light isn't a JSON object");
-
-    let light_type = light.find(&"type".to_string())
-                          .expect("Light doesn't have a type")
-                          .as_string()
-                          .expect("Light type isn't a string");
-    assert!(light_type.as_slice() == "directional light",
-            "only directional lights are currently supported");
-    let pos = light.find(&"direction".to_string())
-                        .expect("Light doesn't have a position")
-                        .as_list()
-                        .expect("Light position isn't of form [x, y, z]");
-    let color = light.find(&"color".to_string())
-                     .expect("Light doesn't have a color")
-                     .as_list()
-                     .expect("Light color isn't of form [r, g, b]");
-    let intensity = light.find(&"intensity".to_string())
-                         .expect("Light doesn't have intensity")
-                         .as_f64()
-                         .expect("Light intensity isn't a number") as f32;
-    let x = pos[0].as_f64().expect("Position should only contain numbers") as f32;
-    let y = pos[1].as_f64().expect("Position should only contain numbers") as f32;
-    let z = pos[2].as_f64().expect("Position should only contain numbers") as f32;
-    let r = color[0].as_f64().expect("Color should only contain numbers") as f32;
-    let g = color[1].as_f64().expect("Color should only contain numbers") as f32;
-    let b = color[2].as_f64().expect("Color should only contain numbers") as f32;
-
-    let light_object = DirectionalLight { direction: Vector3::new(x, y, z).normalize(),
-                                          color: Color { r: r, g: g, b: b },
-                                          intensity: intensity,
-                                          angle: 0.0 };
-    SceneLight { illuminator: box light_object }
 }

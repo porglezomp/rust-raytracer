@@ -45,9 +45,6 @@ pub struct SceneLight {
 
 pub fn build_scene(filename: &str) -> Scene {
     let (objects, lights) = parse_scene(filename);
-    for object in lights.iter() {
-        println!("{}", object);
-    }
     Scene { objects: objects,
             lights: lights}
 }
@@ -95,7 +92,7 @@ impl Scene {
     pub fn check_ray_distance(&self, ray: &Ray3<f32>, distance: f32) -> bool {
         for object in self.objects.iter() {
             match object.geometry.intersection(ray) {
-                Some(d) if d >= distance => return true,
+                Some(d) if d <= distance => return true,
                 _                        => ()
             }
         }
@@ -174,7 +171,6 @@ impl Illuminator for DirectionalLight {
             let diff = saturate(dot(*normal, self.direction));
             let color = self.color.mul_s(self.intensity * diff);
             color
-            
         } else {
             Color { r: 0.0,
                     g: 0.0,
@@ -183,10 +179,21 @@ impl Illuminator for DirectionalLight {
     }
 }
 
-impl Show for SceneLight {
-    fn fmt(&self, format: &mut Formatter) -> Result<(), FormatError> {
-        format.write_str("This is a light!");
-        Ok(())
+impl Illuminator for PointLight {
+    fn illuminate(&self, scene: &Scene, point: &Point3<f32>, normal: &Vector3<f32>) -> Color {
+        let delta = self.position.sub_p(point);
+        let distance = delta.length();
+        let direction = delta.normalize();
+        if !scene.check_ray_distance(&Ray::new(*point, direction), distance) {
+            let brightness = self.intensity / (distance * distance);
+            let diff = saturate(dot(*normal, direction));
+            let color = self.color.mul_s(brightness * diff);
+            color
+        } else {
+            Color { r: 0.0,
+                    g: 0.0,
+                    b: 0.0 }
+        }
     }
 }
 
@@ -195,11 +202,11 @@ struct Intersection {
     normal: Vector3<f32>
 }
 
-trait Intersectable {
+pub trait Intersectable {
     fn intersection(&self, ray: &Ray3<f32>) -> Option<f32>;
     fn intersection_info(&self, point: &Point3<f32>) -> Intersection;
 }
 
-trait Illuminator {
+pub trait Illuminator {
     fn illuminate(&self, scene: &Scene, point: &Point3<f32>, normal: &Vector3<f32>) -> Color;
 }
