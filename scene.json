@@ -36,6 +36,15 @@
         }
     ],
     "lights": [
+        
+    ],
+    "derp": [
+        {
+            "type": "directional light",
+            "direction": [3, -1, 2],
+            "color": [1, 0.8, 0.7],
+            "intensity": 1.0
+        },
         {
             "type": "point light",
             "position": [0, 0, 1],

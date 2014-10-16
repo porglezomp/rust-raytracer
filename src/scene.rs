@@ -5,6 +5,8 @@ use cgmath::{EuclideanVector, Point, Vector};
 use cgmath::{Vector3, Point3, Ray3, Ray};
 use cgmath::{dot};
 use std::fmt::{Show, Formatter, FormatError};
+use std::rand;
+use std::rand::distributions::{Normal, IndependentSample};
 
 pub struct Sphere {
     pos: Point3<f32>,
@@ -104,8 +106,35 @@ impl Scene {
         for light in self.lights.iter() {
             total_light = total_light.add_c(&light.illuminate(self, point, normal));
         }
+        total_light = total_light.add_c(&self.ambient_occlusion(point, normal));
         total_light
     }
+
+    fn ambient_occlusion(&self, point: &Point3<f32>, normal: &Vector3<f32>) -> Color {
+        let num_samples = 64u;
+        if num_samples == 0 { return Color { r: 0.0, g: 0.0, b: 0.0 }; };
+        let mut total_light = Color { r: 0.0, g: 0.0, b: 0.0 };
+        for _ in range(0, num_samples) {
+            let vector = random_cos_around(normal);
+            if !self.check_ray(&Ray::new(*point, vector)) {
+                total_light = total_light.add_c(&sky_color(&vector));
+            }
+        }
+        total_light.mul_s(1.0/num_samples as f32)
+    }
+}
+
+fn random_unit_vector() -> Vector3<f32> {
+    let normal = Normal::new(0.0, 1.0);
+    let x = normal.ind_sample(&mut rand::task_rng()) as f32;
+    let y = normal.ind_sample(&mut rand::task_rng()) as f32;
+    let z = normal.ind_sample(&mut rand::task_rng()) as f32;
+    Vector3::new(x, y, z).normalize()
+}
+
+fn random_cos_around(vector: &Vector3<f32>) -> Vector3<f32> {
+    let second = random_unit_vector();
+    vector.add_v(&second).normalize()
 }
 
 fn saturate(x: f32) -> f32 {
