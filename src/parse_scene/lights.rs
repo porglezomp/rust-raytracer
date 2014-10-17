@@ -1,7 +1,7 @@
 use scene::{SceneLight, DirectionalLight, PointLight, Illuminator};
 use serialize::json::{Json, JsonObject};
 use image_types::Color;
-use cgmath::{Point3, Vector3, Vector, EuclideanVector};
+use cgmath::{Point3, Vector3, EuclideanVector};
 
 pub fn parse_lights(lights_json: &Json) -> Vec<SceneLight> {
     let lights = lights_json.as_list()

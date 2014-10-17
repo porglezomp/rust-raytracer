@@ -30,21 +30,26 @@
         },
         {
             "type": "sphere",
+            "material": "red",
+            "position": [0, 0, 0],
+            "radius": 0.5
+        },
+        {
+            "type": "sphere",
             "material": "white",
             "position": [0, 0, -100.7],
             "radius": 100
         }
     ],
     "lights": [
-        
-    ],
-    "derp": [
         {
             "type": "directional light",
             "direction": [3, -1, 2],
             "color": [1, 0.8, 0.7],
             "intensity": 1.0
-        },
+        }
+    ],
+    "derp": [
         {
             "type": "point light",
             "position": [0, 0, 1],

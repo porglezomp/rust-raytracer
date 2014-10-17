@@ -2,23 +2,23 @@
 name = "raytracer"
 version = "0.0.1"
 dependencies = [
- "cgmath 0.0.1 (git+https://github.com/bjz/cgmath-rs.git#d981c349a0ffb13fb298f1ac1d5e5483ce860a81)",
- "lodepng 0.1.0 (git+https://github.com/pornel/lodepng-rust.git#cb945bbbc980220c8ab9545a5b8695544dce5171)",
- "num 0.0.1 (git+https://github.com/rust-lang/num#9b6e014a8b9be2a312ce304b89a7c0e1ce87396b)",
+ "cgmath 0.0.1 (git+https://github.com/bjz/cgmath-rs.git#f514fb28830ef55da8f4eccda8a1cfaf170b63f5)",
+ "lodepng 0.1.0 (git+https://github.com/pornel/lodepng-rust.git#5491439fa0ba643a6201db0d2b9bd6ceef378ca3)",
+ "num 0.0.1 (git+https://github.com/rust-lang/num#5e2ece2f6fd1508cc32c16757885e5b6919f1d41)",
 ]
 
 [[package]]
 name = "cgmath"
 version = "0.0.1"
-source = "git+https://github.com/bjz/cgmath-rs.git#d981c349a0ffb13fb298f1ac1d5e5483ce860a81"
+source = "git+https://github.com/bjz/cgmath-rs.git#f514fb28830ef55da8f4eccda8a1cfaf170b63f5"
 
 [[package]]
 name = "lodepng"
 version = "0.1.0"
-source = "git+https://github.com/pornel/lodepng-rust.git#cb945bbbc980220c8ab9545a5b8695544dce5171"
+source = "git+https://github.com/pornel/lodepng-rust.git#5491439fa0ba643a6201db0d2b9bd6ceef378ca3"
 
 [[package]]
 name = "num"
 version = "0.0.1"
-source = "git+https://github.com/rust-lang/num#9b6e014a8b9be2a312ce304b89a7c0e1ce87396b"
+source = "git+https://github.com/rust-lang/num#5e2ece2f6fd1508cc32c16757885e5b6919f1d41"
 

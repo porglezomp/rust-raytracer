@@ -1,4 +1,4 @@
-use scene::{Sphere, SceneObject, SceneLight, Material, DirectionalLight};
+use scene::{Scene, Sphere, SceneObject, SceneLight, Material};
 use std::collections::TreeMap;
 use std::str;
 use serialize::json::{Json, Object};
@@ -6,11 +6,10 @@ use serialize::json;
 use std::io::File;
 use std::sync::Arc;
 use image_types::Color;
-use cgmath::{Point3, Vector3, Vector, EuclideanVector};
 
 mod lights;
 
-pub fn parse_scene(filename: &str) -> (Vec<SceneObject>, Vec<SceneLight>) {
+pub fn parse_scene(filename: &str) -> Scene {
     let path = Path::new(filename);
     let contents = File::open(&path).read_to_end();
     let content = 
@@ -42,7 +41,10 @@ pub fn parse_scene(filename: &str) -> (Vec<SceneObject>, Vec<SceneLight>) {
         _ => fail!("Error, top level of scene file isn't an object.")
     }
         
-    (objects, lights)
+    Scene { objects: objects,
+            lights: lights,
+            num_samples: 32,
+            bounces: 1 }
 }
 
 fn parse_materials(materials_json: &Json) -> TreeMap<String, Arc<Material>> {
