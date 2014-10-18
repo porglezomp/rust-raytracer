@@ -83,5 +83,5 @@ fn directional_from_json(light: &JsonObject) -> Box<Illuminator+Send+Sync> {
     box DirectionalLight { direction: Vector3::new(x, y, z).normalize(),
                            color: Color { r: r, g: g, b: b },
                            intensity: intensity,
-                           angle: 0.0 }
+                           angle: 5.0 }
 }

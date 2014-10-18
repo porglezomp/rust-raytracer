@@ -43,8 +43,9 @@ pub fn parse_scene(filename: &str) -> Scene {
         
     Scene { objects: objects,
             lights: lights,
-            num_samples: 32,
-            bounces: 1 }
+            num_GI_samples: 64,
+            num_shadow_samples: 32,
+            bounces: 2 }
 }
 
 fn parse_materials(materials_json: &Json) -> TreeMap<String, Arc<Material>> {

@@ -82,6 +82,10 @@ impl ImageIter {
             end_row_h: h % tile_h
         }
     }
+
+    pub fn number_of_tiles(&self) -> u32 {
+        (self.num_tiles_x) * (self.num_tiles_y+1)
+    }
 }
 
 impl Iterator<Rect> for ImageIter {
