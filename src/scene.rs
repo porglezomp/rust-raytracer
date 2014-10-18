@@ -3,9 +3,10 @@ use std::sync::Arc;
 use image_types::Color;
 use cgmath::{EuclideanVector, Point, Vector, Rotation};
 use cgmath::{Vector3, Point3, Ray3, Ray, Basis3};
-use cgmath::{dot};
+use cgmath::dot;
 use std::rand;
-use std::rand::distributions::{Normal, Range, IndependentSample};
+use std::rand::Rng;
+use std::rand::distributions::{Normal, IndependentSample};
 
 pub struct Sphere {
     pos: Point3<f32>,
@@ -15,7 +16,7 @@ pub struct Sphere {
 pub struct Scene {
     pub objects: Vec<SceneObject>,
     pub lights: Vec<SceneLight>,
-    pub num_GI_samples: u32,
+    pub num_gi_samples: u32,
     pub num_shadow_samples: u32,
     pub bounces: u32
 }
@@ -126,7 +127,7 @@ impl Scene {
 
     fn environment_light(&self, point: &Point3<f32>, normal: &Vector3<f32>, depth: u32) -> Color {
         let mut total_light = Color { r: 0.0, g: 0.0, b: 0.0 };
-        let reduced_samples = self.num_GI_samples >> (depth * 2) as uint;
+        let reduced_samples = self.num_gi_samples >> (depth * 2) as uint;
         if reduced_samples == 0 { return Color { r: 0.0, g: 0.0, b: 0.0 }; };
         for _ in range(0, reduced_samples) {
             let vector = random_cos_around(normal);
@@ -153,21 +154,17 @@ fn random_unit_vector() -> Vector3<f32> {
 }
 
 const PI : f32 = 3.141592653589793238;
-fn random_in_cone(vector: &Vector3<f32>, angle: f32) -> Vector3<f32> {
+fn random_in_cone(angle: f32) -> Vector3<f32> {
     // Generate a vector in the cone around <0, 0, 1>
     let max = 1.0;
     let min = (angle*PI/180.0).cos();
-    let random_z = Range::new(min, max);
-    let random_t = Range::new(0.0, 2.0*PI);
-    let z = random_z.ind_sample(&mut rand::task_rng()) as f32;
-    let t = random_t.ind_sample(&mut rand::task_rng()) as f32;
+    let z = rand::task_rng().gen_range(min, max) as f32;
+    let t = rand::task_rng().gen_range(0.0, 2.0*PI) as f32;
     let r = (1.0 - z*z).sqrt();
     let x = r * t.cos();
     let y = r * t.sin();
     let vec = Vector3::new(x, y, z);
-    // Rotate the vector to surround the axis
-    let rotation: Basis3<f32> = Rotation::between_vectors(&Vector3::unit_z(), vector);
-    rotation.rotate_vector(&vec)    
+    vec
 }
 
 fn random_cos_around(vector: &Vector3<f32>) -> Vector3<f32> {
@@ -247,9 +244,9 @@ impl Illuminator for DirectionalLight {
     fn illuminate(&self, scene: &Scene, point: &Point3<f32>, normal: &Vector3<f32>) -> Color {
         let mut f = 0.0;
         let delta = 1.0 / scene.num_shadow_samples as f32;
+        let rotation: Basis3<f32> = Rotation::between_vectors(&Vector3::unit_z(), &self.direction);
         for _ in range(0, scene.num_shadow_samples) {
-            let vec = random_in_cone(&self.direction, self.angle);
-            //let vec = self.direction;
+            let vec = rotation.rotate_vector(&random_in_cone(self.angle));
             let ray = Ray::new(*point, vec);
             if !scene.check_ray(&ray) {
                 f += delta;

@@ -1,4 +1,4 @@
-use scene::{Scene, Sphere, SceneObject, SceneLight, Material};
+use scene::{Scene, Sphere, SceneObject, Material};
 use std::collections::TreeMap;
 use std::str;
 use serialize::json::{Json, Object};
@@ -43,7 +43,7 @@ pub fn parse_scene(filename: &str) -> Scene {
         
     Scene { objects: objects,
             lights: lights,
-            num_GI_samples: 64,
+            num_gi_samples: 64,
             num_shadow_samples: 32,
             bounces: 2 }
 }
