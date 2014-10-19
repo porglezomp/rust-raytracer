@@ -70,7 +70,7 @@ pub struct ImageIter {
 
 impl ImageIter {
     pub fn for_image_dimensions(w: u32, h: u32) -> ImageIter {
-        let (tile_w, tile_h) = (128, 128);
+        let (tile_w, tile_h) = (64, 64);
         ImageIter {
             x: 0,
             y: 0,

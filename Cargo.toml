@@ -8,10 +8,10 @@ authors = ["Caleb Jones <bionicle.dragon@gmail.com>"]
 
 git = "https://github.com/pornel/lodepng-rust.git"
 
-[dependencies.num]
-
-git = "https://github.com/rust-lang/num"
-
 [dependencies.cgmath]
 
 git = "https://github.com/bjz/cgmath-rs.git"
+
+[dependencies.sdl2]
+
+git = "https://github.com/AngryLawyer/rust-sdl2.git"

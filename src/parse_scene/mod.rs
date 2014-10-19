@@ -43,8 +43,8 @@ pub fn parse_scene(filename: &str) -> Scene {
         
     Scene { objects: objects,
             lights: lights,
-            num_gi_samples: 64,
-            num_shadow_samples: 32,
+            num_gi_samples: 16,
+            num_shadow_samples: 16,
             bounces: 2 }
 }
 

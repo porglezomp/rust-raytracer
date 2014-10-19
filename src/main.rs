@@ -1,9 +1,10 @@
 #![feature(globs)]
-
+extern crate sdl2;
 extern crate lodepng;
 extern crate cgmath;
 extern crate serialize;
 
+use sdl2::video::{Window, PosCentered, OPENGL};
 use std::sync::Arc;
 use std::comm;
 use cgmath::*;
@@ -21,8 +22,23 @@ const ASPECT : f32 = (W as f32) / (H as f32);
 const PIXEL_COUNT : uint = (W*H) as uint;
 
 fn main() {
+    sdl2::init(sdl2::INIT_EVERYTHING);
+    let window = match Window::new("Raytracer", PosCentered,
+                                   PosCentered, W as int,
+                                   H as int, OPENGL) {
+        Ok(window) => window,
+        Err(err)   => fail!("Failed to create window: {}", err)
+    };
+    let renderer = match sdl2::render::Renderer::from_window(window,
+                                                       sdl2::render::DriverAuto,
+                                                       sdl2::render::ACCELERATED) {
+        Ok(renderer) => renderer,
+        Err(err)     => fail!("Failed to create renderer: {}", err)
+    };
+    let _ = renderer.clear();
+    let _ = renderer.present();
     let filename = "scene.json";
-    println!("Parsing...");
+    println!("Parsing scene...");
     let scene = Arc::new(scene::build_scene(filename.as_slice()));
     println!("Parse Complete");
     let num_threads = std::rt::default_sched_threads();
@@ -30,6 +46,12 @@ fn main() {
     let mut data = Vec::from_elem(PIXEL_COUNT*3, 0);
     let (tx, rx) = comm::channel();
     let mut points = Vec::with_capacity(PIXEL_COUNT);
+    let mut texture = match renderer.create_texture(sdl2::pixels::RGB24,
+                                                    sdl2::render::AccessStreaming,
+                                                    W as int, H as int) {
+        Ok(texture) => texture,
+        Err(err)    => fail!("Could not create texture: {}", err)
+    };
 
     for x in range(0, W) {
         for y in range(0, H) {
@@ -37,7 +59,6 @@ fn main() {
         }
     }
 
-    println!("Starting jobs!");
     let mut counter = 0u;
     let mut jobs = ImageIter::for_image_dimensions(W, H);
         for _ in range(0, num_threads) {
@@ -50,21 +71,17 @@ fn main() {
             }
         }
     }
-    print!("[");
-    for _ in range(0, jobs.number_of_tiles()) {
-        print!(" ");
-    }
-    print!("]\r[");
     loop {
         let (rect, pixels) = rx.recv();
-        print!("+");
-        stdio::flush();
         for (point, pixel) in rect.iter().zip(pixels.iter()) {
             let index : uint = ((point.x + point.y * W) * 3) as uint;
             data[index + 0] = pixel.r;
             data[index + 1] = pixel.g;
             data[index + 2] = pixel.b;
         }
+        texture.update(None, data.as_slice(), W as int * 3);
+        renderer.copy(&texture, None, None);
+        renderer.present();
         let job = jobs.next();
         match job {
             None => counter -= 1,
@@ -72,13 +89,14 @@ fn main() {
         }
         if counter == 0 { break };
     }
-    println!("]");
         
     let path = &Path::new("test.png");
     match lodepng::encode_file(path, data.as_slice(), W, H, lodepng::LCT_RGB, 8) {
         Err(e) => fail!("Error writing: {}", e),
         Ok(_)  => (),
     }
+
+    sdl2::quit();
 }
 
 fn new_worker(tx: &Sender<(Rect, Vec<Pixel>)>, rect: Rect, scene: Arc<Scene>) {
@@ -117,10 +135,6 @@ fn generate_pixel(point: ScreenPoint, scene: &Arc<Scene>) -> Pixel {
         c = c.add_c(&scene.trace_ray(&view_ray, 0));
     }
     c = c.mul_s(1.0/N_SAMPLES as f32).saturate();
-/*    let gamma = 1.0/2.2;
-    c.r = c.r.powf(gamma);
-    c.g = c.g.powf(gamma);
-    c.b = c.b.powf(gamma);*/
     Pixel { r: (c.r * 255.0) as u8,
             g: (c.g * 255.0) as u8,
             b: (c.b * 255.0) as u8 }

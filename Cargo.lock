@@ -3,8 +3,8 @@ name = "raytracer"
 version = "0.0.1"
 dependencies = [
  "cgmath 0.0.1 (git+https://github.com/bjz/cgmath-rs.git#f514fb28830ef55da8f4eccda8a1cfaf170b63f5)",
- "lodepng 0.1.0 (git+https://github.com/pornel/lodepng-rust.git#5491439fa0ba643a6201db0d2b9bd6ceef378ca3)",
- "num 0.0.1 (git+https://github.com/rust-lang/num#5e2ece2f6fd1508cc32c16757885e5b6919f1d41)",
+ "lodepng 0.1.0 (git+https://github.com/pornel/lodepng-rust.git#dda3c7848cac2591745d5e967577b7517d28f2a2)",
+ "sdl2 0.0.1-alpha.1 (git+https://github.com/AngryLawyer/rust-sdl2.git#99c95bd85641234b29b361000681e9df132b5529)",
 ]
 
 [[package]]
@@ -15,10 +15,10 @@ source = "git+https://github.com/bjz/cgmath-rs.git#f514fb28830ef55da8f4eccda8a1c
 [[package]]
 name = "lodepng"
 version = "0.1.0"
-source = "git+https://github.com/pornel/lodepng-rust.git#5491439fa0ba643a6201db0d2b9bd6ceef378ca3"
+source = "git+https://github.com/pornel/lodepng-rust.git#dda3c7848cac2591745d5e967577b7517d28f2a2"
 
 [[package]]
-name = "num"
-version = "0.0.1"
-source = "git+https://github.com/rust-lang/num#5e2ece2f6fd1508cc32c16757885e5b6919f1d41"
+name = "sdl2"
+version = "0.0.1-alpha.1"
+source = "git+https://github.com/AngryLawyer/rust-sdl2.git#99c95bd85641234b29b361000681e9df132b5529"
 
