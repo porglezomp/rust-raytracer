@@ -70,7 +70,7 @@ pub struct ImageIter {
 
 impl ImageIter {
     pub fn for_image_dimensions(w: u32, h: u32) -> ImageIter {
-        let (tile_w, tile_h) = (64, 64);
+        let (tile_w, tile_h) = (32, 32);
         ImageIter {
             x: 0,
             y: 0,
@@ -81,10 +81,6 @@ impl ImageIter {
             end_row_w: w % tile_w,
             end_row_h: h % tile_h
         }
-    }
-
-    pub fn number_of_tiles(&self) -> u32 {
-        (self.num_tiles_x) * (self.num_tiles_y+1)
     }
 }
 

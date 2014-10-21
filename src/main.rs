@@ -10,14 +10,13 @@ use std::comm;
 use cgmath::*;
 use image_types::{ScreenPoint, Pixel, Rect, ImageIter, Color};
 use scene::Scene;
-use std::io::stdio;
 
 mod image_types;
 mod scene;
 mod parse_scene;
 
-const W : u32 = 640;
-const H : u32 = 480;
+const W : u32 = 1280;
+const H : u32 = 720;
 const ASPECT : f32 = (W as f32) / (H as f32);
 const PIXEL_COUNT : uint = (W*H) as uint;
 
@@ -46,7 +45,7 @@ fn main() {
     let mut data = Vec::from_elem(PIXEL_COUNT*3, 0);
     let (tx, rx) = comm::channel();
     let mut points = Vec::with_capacity(PIXEL_COUNT);
-    let mut texture = match renderer.create_texture(sdl2::pixels::RGB24,
+    let texture = match renderer.create_texture(sdl2::pixels::RGB24,
                                                     sdl2::render::AccessStreaming,
                                                     W as int, H as int) {
         Ok(texture) => texture,
@@ -79,8 +78,8 @@ fn main() {
             data[index + 1] = pixel.g;
             data[index + 2] = pixel.b;
         }
-        texture.update(None, data.as_slice(), W as int * 3);
-        renderer.copy(&texture, None, None);
+        let _ = texture.update(None, data.as_slice(), W as int * 3);
+        let _ = renderer.copy(&texture, None, None);
         renderer.present();
         let job = jobs.next();
         match job {

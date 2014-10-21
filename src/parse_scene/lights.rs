@@ -55,7 +55,7 @@ fn point_from_json(light: &JsonObject) -> Box<Illuminator+Send+Sync> {
     box PointLight { position: Point3::new(x, y, z),
                      color: Color { r: r, g: g, b: b },
                      intensity: intensity,
-                     radius: 0.0 }
+                     radius: 0.3 }
 }
 
 

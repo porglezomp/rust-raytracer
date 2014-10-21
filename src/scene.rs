@@ -266,19 +266,18 @@ impl Illuminator for DirectionalLight {
 
 impl Illuminator for PointLight {
     fn illuminate(&self, scene: &Scene, point: &Point3<f32>, normal: &Vector3<f32>) -> Color {
-        let delta = self.position.sub_p(point);
-        let distance = delta.length();
-        let direction = delta.normalize();
-        if !scene.check_ray_distance(&Ray::new(*point, direction), distance) {
-            let brightness = self.intensity / (distance * distance);
-            let diff = saturate(dot(*normal, direction));
-            let color = self.color.mul_s(brightness * diff);
-            color
-        } else {
-            Color { r: 0.0,
-                    g: 0.0,
-                    b: 0.0 }
+        let mut flux = 0.0;
+        for _ in range(0, scene.num_shadow_samples) {
+            let delta = self.position.add_v(&random_unit_vector().mul_s(self.radius)).sub_p(point);
+            let distance = delta.length();
+            let direction = delta.normalize();
+            if !scene.check_ray_distance(&Ray::new(*point, direction), distance) {
+                flux += dot(*normal, direction) * self.intensity / (distance * distance);
+            }
         }
+        flux /= scene.num_shadow_samples as f32;
+        let color = self.color.mul_s(flux);
+        color
     }
 }
 
