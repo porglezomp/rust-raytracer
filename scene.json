@@ -1,4 +1,9 @@
 {
+    "scene": {
+        "GI samples": 32,
+        "shadow samples": 32,
+        "bounces": 2
+    },
     "materials": [
         {
             "name": "white",
@@ -40,7 +45,8 @@
             "type": "point light",
             "position": [0, 0, 1],
             "color": [1, 0.8, 0.7],
-            "intensity": 3.0
+            "intensity": 5.0,
+            "radius": 0.0
         }
     ],
     "derp": [

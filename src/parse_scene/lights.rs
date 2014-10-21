@@ -52,10 +52,15 @@ fn point_from_json(light: &JsonObject) -> Box<Illuminator+Send+Sync> {
     let g = color[1].as_f64().expect("Color should only contain numbers") as f32;
     let b = color[2].as_f64().expect("Color should only contain numbers") as f32;
         
+    let radius = light.find(&"radius".to_string())
+        .expect("Point light doesn't have radius")
+        .as_f64()
+        .expect("Point light radius isn't a number") as f32;
+    
     box PointLight { position: Point3::new(x, y, z),
                      color: Color { r: r, g: g, b: b },
                      intensity: intensity,
-                     radius: 0.3 }
+                     radius: radius }
 }
 
 
@@ -80,8 +85,14 @@ fn directional_from_json(light: &JsonObject) -> Box<Illuminator+Send+Sync> {
     let g = color[1].as_f64().expect("Color should only contain numbers") as f32;
     let b = color[2].as_f64().expect("Color should only contain numbers") as f32;
     
+    let angle = light.find(&"angle".to_string())
+        .expect("Directional light doesn't have angle")
+        .as_f64()
+        .expect("Directional light angle isn't a number") as f32;
+            
+
     box DirectionalLight { direction: Vector3::new(x, y, z).normalize(),
                            color: Color { r: r, g: g, b: b },
                            intensity: intensity,
-                           angle: 10.0 }
+                           angle: angle }
 }
